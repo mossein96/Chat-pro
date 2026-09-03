@@ -1,30 +1,21 @@
-document.body.innerHTML = `
-  <div style="
-    font-family: Arial, sans-serif;
-    max-width: 500px;
-    margin: 40px auto;
-    padding: 25px;
-    text-align: center;
-  ">
-    <h1>Chat Pro 💬</h1>
+function sendMessage() {
+  const input = document.getElementById("messageInput");
+  const messages = document.getElementById("messages");
 
-    <p id="message">
-      Welcome! Your app is starting.
-    </p>
+  const messageText = input.value.trim();
 
-    <button id="startButton" style="
-      padding: 15px 25px;
-      font-size: 18px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-    ">
-      Get Started
-    </button>
-  </div>
-`;
+  if (messageText === "") {
+    return;
+  }
 
-document.getElementById("startButton").addEventListener("click", function () {
-  document.getElementById("message").textContent =
-    "🎉 Chat Pro is working! Next, we will build the real features.";
-});
+  const message = document.createElement("div");
+
+  message.className = "message";
+  message.textContent = messageText;
+
+  messages.appendChild(message);
+
+  input.value = "";
+
+  messages.scrollTop = messages.scrollHeight;
+}
