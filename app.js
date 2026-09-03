@@ -1,10 +1,33 @@
 function startApp() {
-  const message = document.getElementById("message");
+  document.body.innerHTML = `
+    <div class="app">
+      <header>
+        <h1>💬 Chat Pro</h1>
+        <p>Connect. Chat. Enjoy.</p>
+      </header>
 
-  message.style.display = "block";
+      <main>
+        <div class="welcome-card">
+          <h2>Welcome to Chat Pro 👋</h2>
+          <p>A simple messaging app built step by step.</p>
 
-  message.innerHTML = `
-    <h3>Welcome to Chat Pro! 🎉</h3>
-    <p>Your app is now working.</p>
+          <button onclick="showMessage()">
+            Start Chatting
+          </button>
+        </div>
+
+        <div id="message"></div>
+      </main>
+    </div>
   `;
 }
+
+function showMessage() {
+  document.getElementById("message").innerHTML = `
+    <div class="message-box">
+      🎉 Your Chat Pro app is working!
+    </div>
+  `;
+}
+
+startApp();
