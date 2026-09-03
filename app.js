@@ -1,33 +1,32 @@
-function startApp() {
-  document.body.innerHTML = `
-    <div class="app">
-      <header>
-        <h1>💬 Chat Pro</h1>
-        <p>Connect. Chat. Enjoy.</p>
-      </header>
+function sendMessage() {
+  const input = document.getElementById("messageInput");
+  const chat = document.getElementById("chat");
 
-      <main>
-        <div class="welcome-card">
-          <h2>Welcome to Chat Pro 👋</h2>
-          <p>A simple messaging app built step by step.</p>
+  const message = input.value.trim();
 
-          <button onclick="showMessage()">
-            Start Chatting
-          </button>
-        </div>
+  if (message === "") {
+    return;
+  }
 
-        <div id="message"></div>
-      </main>
-    </div>
-  `;
+  const messageBox = document.createElement("div");
+
+  messageBox.className = "message";
+
+  messageBox.textContent = message;
+
+  chat.appendChild(messageBox);
+
+  input.value = "";
+
+  chat.scrollTop = chat.scrollHeight;
 }
 
-function showMessage() {
-  document.getElementById("message").innerHTML = `
-    <div class="message-box">
-      🎉 Your Chat Pro app is working!
-    </div>
-  `;
-}
+document
+  .getElementById("messageInput")
+  .addEventListener("keypress", function (event) {
 
-startApp();
+    if (event.key === "Enter") {
+      sendMessage();
+    }
+
+  });
