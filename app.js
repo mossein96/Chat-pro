@@ -1,5 +1,4 @@
-const FREE_MESSAGE_LIMIT = 10;
-
+const FREE_MESSAGE_LIMIT = 100;
 function getMessageCount() {
     return parseInt(localStorage.getItem("chatProMessageCount") || "0", 10);
 }
