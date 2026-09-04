@@ -457,3 +457,417 @@ updateMessageCount();
 
 </body>
   </html>
+
+    .premium-card {
+      background: #1f1f1f;
+      border: 1px solid #4caf50;
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .premium-card h2 {
+      margin: 0 0 10px;
+      color: #4caf50;
+      font-size: 22px;
+    }
+
+    .premium-card p {
+      color: #cccccc;
+      margin: 8px 0 15px;
+    }
+
+    .upgrade-button {
+      width: 100%;
+      padding: 15px;
+      font-size: 17px;
+      background: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+
+    #chat {
+      height: 500px;
+      overflow-y: auto;
+      background: #202020;
+      border: 1px solid #333;
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .message {
+      padding: 15px;
+      margin: 12px 0;
+      border-radius: 18px;
+      max-width: 85%;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .assistant {
+      background: #333333;
+      margin-right: auto;
+    }
+
+    .user {
+      background: #2e7d32;
+      margin-left: auto;
+      text-align: right;
+    }
+
+    .input-area {
+      display: flex;
+      gap: 12px;
+    }
+
+    input {
+      flex: 1;
+      padding: 18px;
+      font-size: 18px;
+      border-radius: 15px;
+      border: none;
+    }
+
+    .send-button {
+      padding: 18px 25px;
+      font-size: 18px;
+      background: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+    }
+
+    .message-count {
+      text-align: center;
+      color: #aaaaaa;
+      margin: 15px 0;
+      font-size: 14px;
+    }
+
+    footer {
+      text-align: center;
+      color: #888;
+      margin-top: 30px;
+    }
+
+    @media (max-width: 500px) {
+      .container {
+        padding: 20px 15px;
+      }
+
+      #chat {
+        height: 450px;
+      }
+
+      .input-area {
+        gap: 8px;
+      }
+
+      input {
+        width: 70%;
+        font-size: 16px;
+      }
+
+      .send-button {
+        padding: 16px;
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>💬 Chat Pro</header>
+
+<div class="container">
+
+  <h1>Welcome to Chat Pro</h1>
+
+  <p class="subtitle">
+    Chat with your personal AI assistant.
+  </p>
+
+  <div class="premium-card">
+
+    <h2>⭐ Chat Pro Premium</h2>
+
+    <p>
+      Get more AI messages and future premium features.
+    </p>
+
+    <button class="upgrade-button" onclick="upgradeToPremium()">
+      ⭐ Upgrade to Premium
+    </button>
+
+  </div>
+
+  <div id="chat">
+
+    <div class="message assistant">
+      Hello! 👋 Welcome to Chat Pro. How can I help you today?
+    </div>
+
+  </div>
+
+  <div class="message-count" id="messageCount">
+    Free messages remaining: 10
+  </div>
+
+  <div class="input-area">
+
+    <input
+      id="messageInput"
+      type="text"
+      placeholder="Type your message..."
+    >
+
+    <button
+      id="sendButton"
+      class="send-button"
+      onclick="sendMessage()"
+    >
+      Send
+    </button>
+
+  </div>
+
+  <footer>
+    Chat Pro © 2026
+  </footer>
+
+</div>
+
+<script>
+
+const FREE_MESSAGE_LIMIT = 10;
+
+
+function getMessageCount() {
+  return parseInt(
+    localStorage.getItem("chatProMessageCount") || "0",
+    10
+  );
+}
+
+
+function increaseMessageCount() {
+
+  const count = getMessageCount() + 1;
+
+  localStorage.setItem(
+    "chatProMessageCount",
+    count
+  );
+
+  updateMessageCount();
+
+}
+
+
+function updateMessageCount() {
+
+  const used = getMessageCount();
+
+  const remaining = Math.max(
+    0,
+    FREE_MESSAGE_LIMIT - used
+  );
+
+  document.getElementById(
+    "messageCount"
+  ).textContent =
+    "Free messages remaining: " +
+    remaining;
+
+}
+
+
+function addMessage(text, type) {
+
+  const chat = document.getElementById("chat");
+
+  const message = document.createElement("div");
+
+  message.className =
+    type === "user"
+      ? "message user"
+      : "message assistant";
+
+  message.textContent = text;
+
+  chat.appendChild(message);
+
+  chat.scrollTop = chat.scrollHeight;
+
+  return message;
+
+}
+
+
+async function sendMessage() {
+
+  const input =
+    document.getElementById("messageInput");
+
+  const button =
+    document.getElementById("sendButton");
+
+  const message =
+    input.value.trim();
+
+  if (!message) return;
+
+
+  const used = getMessageCount();
+
+
+  if (used >= FREE_MESSAGE_LIMIT) {
+
+    addMessage(
+      "⭐ You have used all your free messages. Upgrade to Chat Pro Premium for more messages.",
+      "assistant"
+    );
+
+    return;
+
+  }
+
+
+  addMessage(
+    message,
+    "user"
+  );
+
+
+  input.value = "";
+
+  input.disabled = true;
+
+  button.disabled = true;
+
+  button.innerText = "Thinking...";
+
+
+  const thinkingMessage =
+    addMessage(
+      "Chat Pro is thinking... 🤖",
+      "assistant"
+    );
+
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/chat",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body:
+            JSON.stringify({
+              message: message
+            })
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    thinkingMessage.remove();
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.error ||
+        "Something went wrong"
+      );
+
+    }
+
+
+    addMessage(
+      data.reply ||
+      "Sorry, I could not generate a reply.",
+      "assistant"
+    );
+
+
+    increaseMessageCount();
+
+
+  } catch (error) {
+
+    thinkingMessage.remove();
+
+
+    addMessage(
+      "⚠️ Error: " +
+      error.message,
+      "assistant"
+    );
+
+  }
+
+
+  input.disabled = false;
+
+  button.disabled = false;
+
+  button.innerText = "Send";
+
+  input.focus();
+
+}
+
+
+function upgradeToPremium() {
+
+  alert(
+    "⭐ Premium is coming soon! We are preparing secure payment options."
+  );
+
+}
+
+
+document
+  .getElementById("messageInput")
+  .addEventListener(
+    "keypress",
+    function(event) {
+
+      if (event.key === "Enter") {
+
+        event.preventDefault();
+
+        sendMessage();
+
+      }
+
+    }
+  );
+
+
+updateMessageCount();
+
+</script>
+
+</body>
+  </html>
