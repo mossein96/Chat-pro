@@ -55,11 +55,6 @@ export default async function handler(req, res) {
 
     const reply =
       data.output_text ||
-      data.output
-        ?.flatMap(item => item.content || [])
-        ?.filter(content => content.type === "output_text")
-        ?.map(content => content.text)
-        ?.join("") ||
       "Sorry, I could not generate a reply.";
 
     return res.status(200).json({
