@@ -1,47 +1,108 @@
-function sendMessage() {
-    const input = document.getElementById("messageInput");
+const FREE_MESSAGE_LIMIT = 10;
+
+function getMessageCount() {
+    return parseInt(localStorage.getItem("chatProMessageCount") || "0", 10);
+}
+
+function increaseMessageCount() {
+    const count = getMessageCount() + 1;
+    localStorage.setItem("chatProMessageCount", count);
+    return count;
+}
+
+function addMessage(text, type = "ai") {
     const chat = document.getElementById("chat");
+
+    const message = document.createElement("div");
+    message.className = type === "user" ? "message user" : "message";
+    message.textContent = text;
+
+    chat.appendChild(message);
+    chat.scrollTop = chat.scrollHeight;
+
+    return message;
+}
+
+async function sendMessage() {
+    const input = document.getElementById("messageInput");
+    const sendButton = document.querySelector("button");
 
     const message = input.value.trim();
 
-    if (message === "") return;
+    if (!message) return;
+
+    const currentCount = getMessageCount();
+
+    // Free plan message limit
+    if (currentCount >= FREE_MESSAGE_LIMIT) {
+        addMessage(
+            "You have reached your 10 free messages. ⭐ Upgrade to Chat Pro Premium for more AI messages.",
+            "ai"
+        );
+        return;
+    }
 
     // Show user's message
-    const userMessage = document.createElement("div");
-    userMessage.className = "message user";
-    userMessage.textContent = message;
-    chat.appendChild(userMessage);
+    addMessage(message, "user");
 
     input.value = "";
-    chat.scrollTop = chat.scrollHeight;
+    input.disabled = true;
 
-    // AI is thinking
-    setTimeout(() => {
-        const aiMessage = document.createElement("div");
-        aiMessage.className = "message";
+    if (sendButton) {
+        sendButton.disabled = true;
+    }
 
-        const text = message.toLowerCase();
+    // Show thinking message
+    const thinkingMessage = addMessage("Chat Pro is thinking... 🤖", "ai");
 
-        if (text.includes("hello") || text.includes("hi")) {
-            aiMessage.textContent =
-                "Hello! 👋 I am Chat Pro, your AI assistant. How can I help you?";
-        } else if (text.includes("who are you")) {
-            aiMessage.textContent =
-                "I am Chat Pro 🤖, your personal AI assistant.";
-        } else if (text.includes("how are you")) {
-            aiMessage.textContent =
-                "I am doing great! 😊 How can I help you today?";
-        } else if (text.includes("name")) {
-            aiMessage.textContent =
-                "My name is Chat Pro 🤖.";
-        } else {
-            aiMessage.textContent =
-                "Thanks for your message! 🤖 I am still learning. Soon I will be connected to real AI.";
+    try {
+        const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                message: message
+            })
+        });
+
+        const data = await response.json();
+
+        thinkingMessage.remove();
+
+        if (!response.ok) {
+            addMessage(
+                data.error || "Sorry, something went wrong. Please try again.",
+                "ai"
+            );
+            return;
         }
 
-        chat.appendChild(aiMessage);
-        chat.scrollTop = chat.scrollHeight;
-    }, 700);
+        addMessage(
+            data.reply || "Sorry, I could not generate a reply.",
+            "ai"
+        );
+
+        increaseMessageCount();
+
+    } catch (error) {
+        console.error(error);
+
+        thinkingMessage.remove();
+
+        addMessage(
+            "Sorry, I could not connect to the AI service. Please try again.",
+            "ai"
+        );
+    } finally {
+        input.disabled = false;
+
+        if (sendButton) {
+            sendButton.disabled = false;
+        }
+
+        input.focus();
+    }
 }
 
 // Press Enter to send
@@ -50,6 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     input.addEventListener("keypress", function(event) {
         if (event.key === "Enter") {
+            event.preventDefault();
             sendMessage();
         }
     });
