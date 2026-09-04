@@ -116,3 +116,66 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
+
+
+    try {
+        const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                message: message
+            })
+        });
+
+        const data = await response.json();
+
+        thinkingMessage.remove();
+
+        if (!response.ok) {
+            addMessage(
+                data.error || "Sorry, something went wrong. Please try again.",
+                "ai"
+            );
+            return;
+        }
+
+        addMessage(
+            data.reply || "Sorry, I could not generate a reply.",
+            "ai"
+        );
+
+        increaseMessageCount();
+
+    } catch (error) {
+        console.error(error);
+
+        thinkingMessage.remove();
+
+        addMessage(
+            "Sorry, I could not connect to the AI service. Please try again.",
+            "ai"
+        );
+    } finally {
+        input.disabled = false;
+
+        if (sendButton) {
+            sendButton.disabled = false;
+        }
+
+        input.focus();
+    }
+}
+
+// Press Enter to send
+document.addEventListener("DOMContentLoaded", () => {
+    const input = document.getElementById("messageInput");
+
+    input.addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            sendMessage();
+        }
+    });
+});
