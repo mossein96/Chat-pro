@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Chat Pro</title>
 
   <style>
@@ -20,46 +19,51 @@
 
     header {
       background: #1f1f1f;
-      padding: 18px;
+      padding: 20px;
       text-align: center;
-      font-size: 24px;
+      font-size: 26px;
       font-weight: bold;
-      border-bottom: 1px solid #333;
     }
 
     .container {
-      max-width: 600px;
+      max-width: 700px;
       margin: auto;
-      padding: 15px;
+      padding: 30px 20px;
     }
 
-    .welcome {
+    h1 {
       text-align: center;
-      margin: 20px 0;
-    }
-
-    .welcome h2 {
       color: #4caf50;
     }
 
-    #chatBox {
-      height: 400px;
+    .subtitle {
+      text-align: center;
+      color: #cccccc;
+      margin-bottom: 30px;
+    }
+
+    #chat {
+      height: 500px;
       overflow-y: auto;
-      background: #1e1e1e;
-      padding: 15px;
-      border-radius: 12px;
+      background: #202020;
       border: 1px solid #333;
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 20px;
     }
 
     .message {
-      padding: 12px;
-      margin: 10px 0;
-      border-radius: 12px;
-      max-width: 80%;
+      padding: 15px;
+      margin: 12px 0;
+      border-radius: 18px;
+      max-width: 85%;
+      line-height: 1.5;
+      white-space: pre-wrap;
     }
 
-    .bot {
-      background: #333;
+    .assistant {
+      background: #333333;
+      margin-right: auto;
     }
 
     .user {
@@ -70,117 +74,162 @@
 
     .input-area {
       display: flex;
-      gap: 10px;
-      margin-top: 15px;
+      gap: 12px;
     }
 
     input {
       flex: 1;
-      padding: 14px;
-      border-radius: 10px;
+      padding: 18px;
+      font-size: 18px;
+      border-radius: 15px;
       border: none;
-      font-size: 16px;
     }
 
     button {
-      padding: 14px 20px;
+      padding: 18px 25px;
+      font-size: 18px;
       background: #4caf50;
       color: white;
       border: none;
-      border-radius: 10px;
-      font-size: 16px;
+      border-radius: 15px;
       cursor: pointer;
     }
 
-    button:hover {
-      background: #45a049;
+    button:disabled {
+      opacity: 0.6;
     }
 
     footer {
       text-align: center;
-      padding: 20px;
       color: #888;
-      font-size: 13px;
+      margin-top: 30px;
     }
   </style>
 </head>
 
 <body>
 
-  <header>
-    💬 Chat Pro
-  </header>
+<header>💬 Chat Pro</header>
 
-  <div class="container">
+<div class="container">
 
-    <div class="welcome">
-      <h2>Welcome to Chat Pro</h2>
-      <p>Chat with your personal assistant.</p>
+  <h1>Welcome to Chat Pro</h1>
+
+  <p class="subtitle">
+    Chat with your personal AI assistant.
+  </p>
+
+  <div id="chat">
+    <div class="message assistant">
+      Hello! 👋 Welcome to Chat Pro. How can I help you today?
     </div>
+  </div>
 
-    <div id="chatBox">
-      <div class="message bot">
-        Hello! 👋 Welcome to Chat Pro. How can I help you today?
-      </div>
-    </div>
+  <div class="input-area">
+    <input
+      id="messageInput"
+      type="text"
+      placeholder="Type your message..."
+    >
 
-    <div class="input-area">
-      <input
-        type="text"
-        id="messageInput"
-        placeholder="Type your message..."
-      >
-
-      <button onclick="sendMessage()">
-        Send
-      </button>
-    </div>
-
+    <button id="sendButton" onclick="sendMessage()">
+      Send
+    </button>
   </div>
 
   <footer>
     Chat Pro © 2026
   </footer>
 
-  <script>
-    function sendMessage() {
-      const input = document.getElementById("messageInput");
-      const chatBox = document.getElementById("chatBox");
-      const message = input.value.trim();
+</div>
 
-      if (message === "") {
-        return;
-      }
+<script>
 
-      const userMessage = document.createElement("div");
-      userMessage.className = "message user";
-      userMessage.textContent = message;
+async function sendMessage() {
 
-      chatBox.appendChild(userMessage);
+  const input = document.getElementById("messageInput");
+  const chat = document.getElementById("chat");
+  const button = document.getElementById("sendButton");
 
-      input.value = "";
+  const message = input.value.trim();
 
-      setTimeout(function () {
-        const botMessage = document.createElement("div");
-        botMessage.className = "message bot";
-        botMessage.textContent =
-          "Thanks for your message! Chat Pro is still being developed.";
+  if (!message) return;
 
-        chatBox.appendChild(botMessage);
-        chatBox.scrollTop = chatBox.scrollHeight;
-      }, 700);
+  chat.innerHTML += `
+    <div class="message user">
+      ${escapeHtml(message)}
+    </div>
+  `;
 
-      chatBox.scrollTop = chatBox.scrollHeight;
+  input.value = "";
+
+  button.disabled = true;
+  button.innerText = "Thinking...";
+
+  chat.scrollTop = chat.scrollHeight;
+
+  try {
+
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: message
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Something went wrong");
     }
 
-    document
-      .getElementById("messageInput")
-      .addEventListener("keypress", function (event) {
-        if (event.key === "Enter") {
-          sendMessage();
-        }
-      });
-  </script>
+    chat.innerHTML += `
+      <div class="message assistant">
+        ${escapeHtml(data.reply)}
+      </div>
+    `;
+
+  } catch (error) {
+
+    chat.innerHTML += `
+      <div class="message assistant">
+        ⚠️ Error: ${escapeHtml(error.message)}
+      </div>
+    `;
+
+  }
+
+  button.disabled = false;
+  button.innerText = "Send";
+
+  chat.scrollTop = chat.scrollHeight;
+}
+
+
+document.getElementById("messageInput")
+.addEventListener("keypress", function(event) {
+
+  if (event.key === "Enter") {
+    sendMessage();
+  }
+
+});
+
+
+function escapeHtml(text) {
+
+  const div = document.createElement("div");
+
+  div.textContent = text;
+
+  return div.innerHTML;
+
+}
+
+</script>
 
 </body>
-</html>
+  </html>
