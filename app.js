@@ -1,6 +1,6 @@
 const FREE_MESSAGE_LIMIT = 100;
 
-// Use a new storage name to reset the old 0-message count
+// New storage key so the old message count does not affect the new limit
 const MESSAGE_STORAGE_KEY = "chatProMessageCountV2";
 
 
@@ -34,18 +34,15 @@ function updateMessageCount() {
         return;
     }
 
-    const used =
-        getMessageCount();
+    const used = getMessageCount();
 
-    const remaining =
-        Math.max(
-            0,
-            FREE_MESSAGE_LIMIT - used
-        );
+    const remaining = Math.max(
+        0,
+        FREE_MESSAGE_LIMIT - used
+    );
 
     messageCount.textContent =
-        "Free messages remaining: " +
-        remaining;
+        "Free messages remaining: " + remaining;
 }
 
 
@@ -53,13 +50,17 @@ function addMessage(text, type = "ai") {
     const chat =
         document.getElementById("chat");
 
+    if (!chat) {
+        return null;
+    }
+
     const message =
         document.createElement("div");
 
     message.className =
         type === "user"
             ? "message user"
-            : "message";
+            : "message assistant";
 
     message.textContent = text;
 
@@ -79,25 +80,26 @@ async function sendMessage() {
     const sendButton =
         document.getElementById("sendButton");
 
+    if (!input) {
+        return;
+    }
+
     const message =
         input.value.trim();
-
 
     if (!message) {
         return;
     }
 
 
+    // Check free message limit
     const currentCount =
         getMessageCount();
 
-
-    // Free message limit
     if (
         currentCount >=
         FREE_MESSAGE_LIMIT
     ) {
-
         addMessage(
             "⭐ You have used all your 100 free messages. Upgrade to Chat Pro Premium for more AI messages.",
             "ai"
@@ -107,7 +109,7 @@ async function sendMessage() {
     }
 
 
-    // Show user's message
+    // Show user message
     addMessage(
         message,
         "user"
@@ -125,7 +127,7 @@ async function sendMessage() {
     }
 
 
-    // Show thinking message
+    // Show temporary thinking message
     const thinkingMessage =
         addMessage(
             "Chat Pro is thinking... 🤖",
@@ -134,7 +136,6 @@ async function sendMessage() {
 
 
     try {
-
         const response =
             await fetch(
                 "/api/chat",
@@ -158,19 +159,20 @@ async function sendMessage() {
             await response.json();
 
 
-        thinkingMessage.remove();
+        if (thinkingMessage) {
+            thinkingMessage.remove();
+        }
 
 
         if (!response.ok) {
-
             throw new Error(
                 data.error ||
                 "Sorry, something went wrong."
             );
-
         }
 
 
+        // Show AI reply
         addMessage(
             data.reply ||
             "Sorry, I could not generate a reply.",
@@ -178,7 +180,7 @@ async function sendMessage() {
         );
 
 
-        // Increase message count only after a successful AI reply
+        // Count only successful AI messages
         increaseMessageCount();
 
 
@@ -187,7 +189,9 @@ async function sendMessage() {
         console.error(error);
 
 
-        thinkingMessage.remove();
+        if (thinkingMessage) {
+            thinkingMessage.remove();
+        }
 
 
         addMessage(
@@ -195,18 +199,15 @@ async function sendMessage() {
             "ai"
         );
 
+
     } finally {
 
         input.disabled = false;
 
 
         if (sendButton) {
-
             sendButton.disabled = false;
-
-            sendButton.textContent =
-                "Send";
-
+            sendButton.textContent = "Send";
         }
 
 
@@ -216,17 +217,15 @@ async function sendMessage() {
 }
 
 
-// Upgrade button
+// Premium button
 function upgradeToPremium() {
-
     alert(
         "⭐ Chat Pro Premium payment is coming soon."
     );
-
 }
 
 
-// Start app
+// Start application
 document.addEventListener(
     "DOMContentLoaded",
     () => {
@@ -239,28 +238,24 @@ document.addEventListener(
 
         // Press Enter to send
         if (input) {
-
             input.addEventListener(
-                "keypress",
+                "keydown",
                 function(event) {
 
                     if (
                         event.key === "Enter"
                     ) {
-
                         event.preventDefault();
 
                         sendMessage();
-
                     }
 
                 }
             );
-
         }
 
 
-        // Show remaining messages
+        // Display remaining messages
         updateMessageCount();
 
     }
