@@ -55,10 +55,15 @@ export default async function handler(req, res) {
 
     const reply =
       data.output_text ||
+      data.output
+        ?.flatMap(item => item.content || [])
+        ?.filter(item => item.type === "output_text")
+        ?.map(item => item.text || "")
+        ?.join("") ||
       "Sorry, I could not generate a reply.";
 
     return res.status(200).json({
-      reply
+      reply: reply
     });
 
   } catch (error) {
@@ -68,4 +73,4 @@ export default async function handler(req, res) {
       error: error.message || "Something went wrong"
     });
   }
-      }
+        }
