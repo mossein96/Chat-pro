@@ -1,0 +1,9 @@
+{
+  "name": "Chat Pro - AI Assistant",
+  "short_name": "Chat Pro",
+  "description": "Chat with your personal AI assistant.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#121212"
+}
