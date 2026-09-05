@@ -1,7 +1,6 @@
-{
-  "name": "Chat Pro - AI Assistant",
+name": "Chat Pro - AI Assistant",
   "short_name": "Chat Pro",
-  "description": "Chat with your personal AI Assistant.",
+  "description": "Talk with your personal AI assistant. Ask questions, get answers, and chat anytime.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#121212",
@@ -17,5 +16,6 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "id": "/chat-pro-ai-assistant"
 }
