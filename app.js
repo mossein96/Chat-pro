@@ -217,12 +217,7 @@ async function sendMessage() {
 }
 
 
-// Premium button
-function upgradeToPremium() {
-    alert(
-        "⭐ Chat Pro Premium payment is coming soon."
-    );
-}
+
 
 
 // Start application
