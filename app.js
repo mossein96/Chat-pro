@@ -1,51 +1,3 @@
-FREE_MESSAGE_LIMIT 
-
-// New storage key so the old message count does not affect the new limit
-const MESSAGE_STORAGE_KEY = "chatProMessageCountV2";
-
-
-function getMessageCount() {
-    return parseInt(
-        localStorage.getItem(MESSAGE_STORAGE_KEY) || "0",
-        10
-    );
-}
-
-
-function increaseMessageCount() {
-    const count = getMessageCount() + 1;
-
-    localStorage.setItem(
-        MESSAGE_STORAGE_KEY,
-        count
-    );
-
-    updateMessageCount();
-
-    return count;
-}
-
-
-function updateMessageCount() {
-    const messageCount =
-        document.getElementById("messageCount");
-
-    if (!messageCount) {
-        return;
-    }
-
-    const used = getMessageCount();
-
-    const remaining = Math.max(
-        0,
-        FREE_MESSAGE_LIMIT - used
-    );
-
-    messageCount.textContent =
-        "Free messages remaining: " + remaining;
-}
-
-
 function addMessage(text, type = "ai") {
     const chat =
         document.getElementById("chat");
@@ -88,23 +40,6 @@ async function sendMessage() {
         input.value.trim();
 
     if (!message) {
-        return;
-    }
-
-
-    // Check free message limit
-    const currentCount =
-        getMessageCount();
-
-    if (
-        currentCount >=
-        FREE_MESSAGE_LIMIT
-    ) {
-        addMessage(
-            "⭐ You have used all your 100 free messages. Upgrade to Chat Pro Premium for more AI messages.",
-            "ai"
-        );
-
         return;
     }
 
@@ -180,10 +115,6 @@ async function sendMessage() {
         );
 
 
-        // Count only successful AI messages
-        increaseMessageCount();
-
-
     } catch (error) {
 
         console.error(error);
@@ -217,9 +148,6 @@ async function sendMessage() {
 }
 
 
-
-
-
 // Start application
 document.addEventListener(
     "DOMContentLoaded",
@@ -248,10 +176,6 @@ document.addEventListener(
                 }
             );
         }
-
-
-        // Display remaining messages
-        updateMessageCount();
 
     }
 );
