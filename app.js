@@ -1,4 +1,4 @@
-const FREE_MESSAGE_LIMIT = 100;
+const FREE_MESSAGE_LIMIT 
 
 // New storage key so the old message count does not affect the new limit
 const MESSAGE_STORAGE_KEY = "chatProMessageCountV2";
