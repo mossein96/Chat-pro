@@ -1,762 +1,983 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
-  <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Chat Pro - AI Assistant</title>
 
-
-  <link
-    rel="manifest"
-    href="/manifest.json"
-  >
-
-
-  <link
-    rel="icon"
-    type="image/png"
-    sizes="192x192"
-    href="/icon-192.png"
-  >
-
-  <link
-    rel="icon"
-    type="image/png"
-    sizes="512x512"
-    href="/icon-512.png"
-  >
-
-  <link
-    rel="apple-touch-icon"
-    href="/icon-192.png"
-  >
-
-
-  <meta
-    name="theme-color"
-    content="#121212"
-  >
-
+  <!-- PWA manifest & icons -->
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+  <meta name="theme-color" content="#121212" />
 
   <style>
-
+    /* ========== GLOBAL RESET & VARIABLES ========== */
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
+    :root {
+      --bg: #121212;
+      --surface: #1e1e1e;
+      --surface2: #2a2a2a;
+      --border: #3a3a3a;
+      --text: #f0f0f0;
+      --text-muted: #aaaaaa;
+      --primary: #4caf50;
+      --primary-dark: #388e3c;
+      --user-msg: #2e7d32;
+      --assistant-msg: #333333;
+      --shadow: 0 8px 20px rgba(0,0,0,0.5);
+      --radius: 20px;
+      --transition: 0.25s ease;
+    }
+
+    /* Light theme (toggled via JavaScript) */
+    body.light {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface2: #e8e8e8;
+      --border: #cccccc;
+      --text: #111111;
+      --text-muted: #555555;
+      --assistant-msg: #e0e0e0;
+      --shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
 
     body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background var(--transition), color var(--transition);
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #121212;
-      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
-
+    /* ========== HEADER ========== */
     header {
-      background: #1f1f1f;
-      padding: 20px;
-      text-align: center;
+      background: var(--surface);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      flex-shrink: 0;
+    }
+
+    header .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    header .brand span {
+      font-size: 28px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .header-actions button {
+      background: transparent;
+      border: none;
+      color: var(--text);
       font-size: 26px;
-      font-weight: bold;
+      cursor: pointer;
+      padding: 6px 8px;
+      border-radius: 12px;
+      transition: background 0.2s;
+      line-height: 1;
     }
 
+    .header-actions button:hover {
+      background: var(--surface2);
+    }
 
+    .header-actions .speaker-btn.active {
+      color: var(--primary);
+    }
+
+    /* ========== CONTAINER ========== */
     .container {
-      max-width: 700px;
-      margin: auto;
-      padding: 30px 20px;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px 20px 30px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
     }
 
-
-    h1 {
+    /* ========== WELCOME TITLE ========== */
+    .welcome {
       text-align: center;
-      color: #4caf50;
+      margin-bottom: 16px;
+    }
+    .welcome h1 {
+      color: var(--primary);
+      font-size: 28px;
+      font-weight: 600;
+    }
+    .welcome p {
+      color: var(--text-muted);
+      font-size: 16px;
     }
 
-
-    .subtitle {
-      text-align: center;
-      color: #cccccc;
-      margin-bottom: 20px;
-    }
-
-
+    /* ========== CHAT BOX ========== */
     #chat {
-      height: 500px;
+      flex: 1;
+      min-height: 400px;
+      max-height: 550px;
       overflow-y: auto;
-      background: #202020;
-      border: 1px solid #333;
-      border-radius: 20px;
-      padding: 20px;
-      margin-bottom: 15px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 18px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+      scroll-behavior: smooth;
     }
 
+    #chat::-webkit-scrollbar {
+      width: 6px;
+    }
+    #chat::-webkit-scrollbar-track {
+      background: var(--surface2);
+      border-radius: 10px;
+    }
+    #chat::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 10px;
+    }
 
+    /* ========== MESSAGES ========== */
     .message {
-      padding: 15px;
-      margin: 12px 0;
+      padding: 14px 18px;
+      margin: 10px 0;
       border-radius: 18px;
       max-width: 85%;
-      line-height: 1.5;
-      white-space: pre-wrap;
+      line-height: 1.6;
       word-break: break-word;
+      white-space: pre-wrap;
+      animation: fadeSlide 0.3s ease;
+      position: relative;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
 
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
 
-    .assistant {
-      background: #333333;
+    .message.assistant {
+      background: var(--assistant-msg);
+      color: var(--text);
       margin-right: auto;
+      border-bottom-left-radius: 6px;
     }
 
-
-    .user {
-      background: #2e7d32;
+    .message.user {
+      background: var(--user-msg);
+      color: white;
       margin-left: auto;
-      text-align: right;
+      border-bottom-right-radius: 6px;
     }
 
+    /* Speaker button inside assistant messages */
+    .message .speak-msg-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 18px;
+      cursor: pointer;
+      margin-left: 12px;
+      padding: 0 4px;
+      vertical-align: middle;
+      transition: color 0.2s;
+    }
+    .message .speak-msg-btn:hover {
+      color: var(--primary);
+    }
 
-    .file-preview {
+    /* ========== FILE PREVIEW ========== */
+    #filePreview {
       display: none;
-      background: #292929;
-      border: 1px solid #444;
-      border-radius: 12px;
-      padding: 10px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px 16px;
       margin-bottom: 10px;
-      color: #dddddd;
+      color: var(--text);
       font-size: 14px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
     }
-
-
-    .file-preview button {
-      margin-left: 10px;
+    #filePreview .file-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #filePreview .remove-file {
       background: transparent;
       border: none;
       color: #ff7777;
-      font-size: 18px;
+      font-size: 20px;
       cursor: pointer;
+      padding: 0 6px;
     }
 
-
+    /* ========== INPUT AREA ========== */
     .input-area {
       display: flex;
       gap: 10px;
       align-items: center;
+      flex-wrap: wrap;
     }
-
 
     #messageInput {
       flex: 1;
-      min-width: 0;
-      padding: 18px;
-      font-size: 18px;
-      border-radius: 15px;
-      border: none;
+      min-width: 150px;
+      padding: 16px 20px;
+      font-size: 17px;
+      border-radius: 30px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+    #messageInput:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+    }
+    #messageInput:disabled {
+      opacity: 0.6;
     }
 
-
-    .attach-button {
-      width: 58px;
-      height: 58px;
+    .action-btn {
+      width: 56px;
+      height: 56px;
       font-size: 24px;
-      background: #333333;
-      color: white;
-      border: none;
-      border-radius: 15px;
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 30px;
       cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
-
+    .action-btn:hover {
+      background: var(--border);
+    }
+    .action-btn:active {
+      transform: scale(0.94);
+    }
+    .action-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
 
     .send-button {
-      padding: 18px 25px;
+      padding: 16px 28px;
       font-size: 18px;
-      background: #4caf50;
+      font-weight: 600;
+      background: var(--primary);
       color: white;
       border: none;
-      border-radius: 15px;
+      border-radius: 30px;
       cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      flex-shrink: 0;
     }
-
-
-    button:disabled {
+    .send-button:hover {
+      background: var(--primary-dark);
+    }
+    .send-button:active {
+      transform: scale(0.96);
+    }
+    .send-button:disabled {
       opacity: 0.6;
       cursor: not-allowed;
+      transform: none;
     }
 
+    /* ========== SETTINGS MODAL ========== */
+    .settings-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .settings-overlay.open {
+      display: flex;
+    }
 
+    .settings-modal {
+      background: var(--surface);
+      max-width: 480px;
+      width: 100%;
+      border-radius: 28px;
+      padding: 32px 28px 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      border: 1px solid var(--border);
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: fadeSlide 0.3s ease;
+    }
+
+    .settings-modal h2 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text);
+    }
+
+    .settings-modal .close-settings {
+      margin-left: auto;
+      background: transparent;
+      border: none;
+      font-size: 28px;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0 6px;
+    }
+    .settings-modal .close-settings:hover {
+      color: var(--text);
+    }
+
+    .setting-group {
+      margin-bottom: 22px;
+    }
+    .setting-group label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 16px;
+      cursor: pointer;
+      gap: 12px;
+    }
+    .setting-group .desc {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+    .setting-group input[type="range"] {
+      width: 100%;
+      margin: 6px 0 2px;
+      accent-color: var(--primary);
+    }
+    .setting-group .range-values {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Toggle switch */
+    .toggle {
+      position: relative;
+      width: 48px;
+      height: 26px;
+      background: var(--border);
+      border-radius: 30px;
+      transition: background 0.3s;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .toggle.active {
+      background: var(--primary);
+    }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.3s;
+    }
+    .toggle.active::after {
+      transform: translateX(22px);
+    }
+
+    /* ========== FOOTER ========== */
     footer {
       text-align: center;
-      color: #888888;
-      margin-top: 30px;
+      color: var(--text-muted);
+      font-size: 14px;
+      padding: 16px 0 8px;
+      border-top: 1px solid var(--border);
+      margin-top: 18px;
     }
 
-
-    @media (max-width: 500px) {
-
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 600px) {
+      header {
+        padding: 12px 16px;
+      }
+      header .brand {
+        font-size: 20px;
+      }
       .container {
-        padding: 20px 15px;
-      }
-
-
-      #chat {
-        height: 450px;
-      }
-
-
-      .input-area {
-        gap: 8px;
-      }
-
-
-      #messageInput {
-        font-size: 16px;
         padding: 16px 12px;
       }
-
-
-      .attach-button {
-        width: 52px;
-        height: 52px;
+      #chat {
+        min-height: 320px;
+        max-height: 400px;
+        padding: 14px 12px;
       }
-
-
+      .message {
+        max-width: 92%;
+        padding: 12px 14px;
+        font-size: 15px;
+      }
+      .input-area {
+        gap: 6px;
+      }
+      #messageInput {
+        font-size: 16px;
+        padding: 14px 16px;
+        min-width: 120px;
+      }
+      .action-btn {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+      }
       .send-button {
-        padding: 16px;
+        padding: 14px 20px;
         font-size: 16px;
       }
-
+      .settings-modal {
+        padding: 24px 18px;
+        margin: 10px;
+      }
     }
-
   </style>
-
 </head>
-
 
 <body>
 
-
+<!-- ========== HEADER ========== -->
 <header>
-  💬 Chat Pro
+  <div class="brand">
+    <span>💬</span> Chat Pro
+  </div>
+  <div class="header-actions">
+    <!-- Speaker toggle (global) -->
+    <button id="globalSpeakerBtn" class="speaker-btn" title="Auto‑speak incoming messages" onclick="toggleAutoSpeak()">🔊</button>
+    <!-- Settings gear -->
+    <button id="settingsToggle" onclick="openSettings()" title="Settings">⚙️</button>
+  </div>
 </header>
 
-
+<!-- ========== MAIN CONTAINER ========== -->
 <div class="container">
 
+  <div class="welcome">
+    <h1>Welcome to Chat Pro</h1>
+    <p>Your AI assistant with voice & attachments</p>
+  </div>
 
-  <h1>
-    Welcome to Chat Pro
-  </h1>
-
-
-  <p class="subtitle">
-    Chat with your AI assistant.
-  </p>
-
-
-
+  <!-- Chat area -->
   <div id="chat">
-
     <div class="message assistant">
-      Hello! 👋 Welcome to Chat Pro. You can now attach a file or send me a message.
+      Hello! 👋 I'm your AI. You can attach files, and I can speak my replies.
+    </div>
+  </div>
+
+  <!-- File preview -->
+  <div id="filePreview">
+    <span class="file-info"><span id="fileName">📎 file</span></span>
+    <button class="remove-file" onclick="removeFile()">✕</button>
+  </div>
+
+  <!-- Input row -->
+  <div class="input-area">
+    <input id="fileInput" type="file" hidden onchange="handleFileSelect(event)" />
+    <button class="action-btn" onclick="document.getElementById('fileInput').click()" title="Attach file">📎</button>
+    <input id="messageInput" type="text" placeholder="Type a message..." autocomplete="off" />
+    <button id="sendButton" class="send-button" onclick="sendMessage()">Send</button>
+  </div>
+
+  <footer>Chat Pro © 2026 — Your intelligent companion</footer>
+</div>
+
+<!-- ========== SETTINGS MODAL ========== -->
+<div id="settingsOverlay" class="settings-overlay" onclick="if(event.target===this) closeSettings()">
+  <div class="settings-modal">
+    <h2>
+      ⚙️ Settings
+      <button class="close-settings" onclick="closeSettings()">✕</button>
+    </h2>
+
+    <!-- Auto‑speak -->
+    <div class="setting-group">
+      <label>
+        <span>🔊 Auto‑speak replies</span>
+        <span class="toggle" id="autoSpeakToggle" onclick="toggleSetting('autoSpeak')"></span>
+      </label>
+      <div class="desc">Automatically read assistant messages aloud</div>
+    </div>
+
+    <!-- Voice speed -->
+    <div class="setting-group">
+      <label>⏱️ Speed</label>
+      <input type="range" id="speechRate" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateDisplay()" />
+      <div class="range-values">
+        <span>Slow</span>
+        <span id="rateDisplay">1.0×</span>
+        <span>Fast</span>
+      </div>
+    </div>
+
+    <!-- Voice pitch -->
+    <div class="setting-group">
+      <label>🎵 Pitch</label>
+      <input type="range" id="speechPitch" min="0.5" max="1.5" step="0.1" value="1.0" oninput="updatePitchDisplay()" />
+      <div class="range-values">
+        <span>Low</span>
+        <span id="pitchDisplay">1.0</span>
+        <span>High</span>
+      </div>
+    </div>
+
+    <!-- Theme toggle -->
+    <div class="setting-group">
+      <label>
+        <span>🌓 Dark / Light theme</span>
+        <span class="toggle" id="themeToggle" onclick="toggleTheme()"></span>
+      </label>
+      <div class="desc">Switch between dark and light mode</div>
+    </div>
+
+    <!-- Notification sounds -->
+    <div class="setting-group">
+      <label>
+        <span>🔔 Notification sounds</span>
+        <span class="toggle" id="soundToggle" onclick="toggleSetting('sound')"></span>
+      </label>
+      <div class="desc">Play a sound when a new message arrives</div>
+    </div>
+
+    <!-- Auto‑send attachments -->
+    <div class="setting-group">
+      <label>
+        <span>📎 Auto‑send attachments</span>
+        <span class="toggle" id="autoSendToggle" onclick="toggleSetting('autoSend')"></span>
+      </label>
+      <div class="desc">Automatically send message when you attach a file</div>
     </div>
 
   </div>
-
-
-
-  <div
-    id="filePreview"
-    class="file-preview"
-  >
-
-    <span id="fileName"></span>
-
-    <button
-      type="button"
-      onclick="removeFile()"
-    >
-      ✕
-    </button>
-
-  </div>
-
-
-
-  <div class="input-area">
-
-
-    <input
-      id="fileInput"
-      type="file"
-      hidden
-      onchange="handleFileSelect(event)"
-    >
-
-
-    <button
-      id="attachButton"
-      class="attach-button"
-      type="button"
-      onclick="document.getElementById('fileInput').click()"
-      title="Attach file"
-    >
-      📎
-    </button>
-
-
-
-    <input
-      id="messageInput"
-      type="text"
-      placeholder="Type your message..."
-      autocomplete="off"
-    >
-
-
-
-    <button
-      id="sendButton"
-      class="send-button"
-      onclick="sendMessage()"
-    >
-      Send
-    </button>
-
-
-  </div>
-
-
-
-  <footer>
-    Chat Pro © 2026
-  </footer>
-
-
 </div>
 
-
-
+<!-- ========== JAVASCRIPT ========== -->
 <script>
-
-
-let selectedFile = null;
-
-
-function addMessage(text, type) {
-
-  const chat =
-    document.getElementById("chat");
-
-
-  const message =
-    document.createElement("div");
-
-
-  message.className =
-    type === "user"
-      ? "message user"
-      : "message assistant";
-
-
-  message.textContent = text;
-
-
-  chat.appendChild(message);
-
-
-  chat.scrollTop =
-    chat.scrollHeight;
-
-
-  return message;
-
-}
-
-
-
-function handleFileSelect(event) {
-
-  const file =
-    event.target.files[0];
-
-
-  if (!file) {
-    return;
-  }
-
-
-  const maxSize =
-    10 * 1024 * 1024;
-
-
-  if (file.size > maxSize) {
-
-    alert(
-      "Please choose a file smaller than 10 MB."
-    );
-
-    event.target.value = "";
-
-    return;
-
-  }
-
-
-  selectedFile = file;
-
-
-  document
-    .getElementById("fileName")
-    .textContent =
-      "📎 " +
-      file.name;
-
-
-  document
-    .getElementById("filePreview")
-    .style.display =
-      "block";
-
-}
-
-
-
-function removeFile() {
-
-  selectedFile = null;
-
-
-  document
-    .getElementById("fileInput")
-    .value =
-      "";
-
-
-  document
-    .getElementById("filePreview")
-    .style.display =
-      "none";
-
-}
-
-
-
-function fileToBase64(file) {
-
-  return new Promise(
-    (resolve, reject) => {
-
-      const reader =
-        new FileReader();
-
-
-      reader.onload =
-        function() {
-
-          resolve(
-            reader.result
-          );
-
-        };
-
-
-      reader.onerror =
-        function() {
-
-          reject(
-            new Error(
-              "Could not read the file"
-            )
-          );
-
-        };
-
-
-      reader.readAsDataURL(
-        file
-      );
-
-    }
-  );
-
-}
-
-
-
-async function sendMessage() {
-
-
-  const input =
-    document.getElementById(
-      "messageInput"
-    );
-
-
-  const button =
-    document.getElementById(
-      "sendButton"
-    );
-
-
-  const attachButton =
-    document.getElementById(
-      "attachButton"
-    );
-
-
-  const message =
-    input.value.trim();
-
-
-  if (
-    !message &&
-    !selectedFile
-  ) {
-
-    return;
-
-  }
-
-
-
-  let userText =
-    message;
-
-
-  if (selectedFile) {
-
-    userText +=
-      (
-        userText
-          ? "\n\n"
-          : ""
-      ) +
-      "📎 Attached: " +
-      selectedFile.name;
-
-  }
-
-
-
-  addMessage(
-    userText,
-    "user"
-  );
-
-
-
-  const fileToSend =
-    selectedFile;
-
-
-
-  input.value = "";
-
-
-  removeFile();
-
-
-
-  input.disabled = true;
-
-
-  button.disabled = true;
-
-
-  attachButton.disabled = true;
-
-
-  button.innerText =
-    "Thinking...";
-
-
-
-  const thinkingMessage =
-    addMessage(
-      "Chat Pro is thinking... 🤖",
-      "assistant"
-    );
-
-
-
-  try {
-
-
-    let fileData =
-      null;
-
-
-
-    if (fileToSend) {
-
-      const base64Data =
-        await fileToBase64(
-          fileToSend
-        );
-
-
-      fileData = {
-
-        name:
-          fileToSend.name,
-
-        type:
-          fileToSend.type,
-
-        data:
-          base64Data
-
-      };
-
-    }
-
-
-
-    const response =
-      await fetch(
-        "/api/chat",
-        {
-
-          method:
-            "POST",
-
-
-          headers: {
-
-            "Content-Type":
-              "application/json"
-
-          },
-
-
-          body:
-            JSON.stringify({
-
-              message:
-                message,
-
-              file:
-                fileData
-
-            })
-
+  (function() {
+    "use strict";
+
+    // ---------------------- DOM refs ----------------------
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendButton');
+    const fileInput = document.getElementById('fileInput');
+    const filePreview = document.getElementById('filePreview');
+    const fileName = document.getElementById('fileName');
+    const globalSpeakerBtn = document.getElementById('globalSpeakerBtn');
+
+    // ---------------------- State ----------------------
+    let selectedFile = null;
+    let isSending = false;
+    let currentAbortController = null; // for quick reply
+
+    // Speech synthesis
+    let speechSynth = window.speechSynthesis;
+    let utterance = null;
+    let autoSpeakEnabled = false;
+    let soundEnabled = false;
+    let autoSendEnabled = false;
+
+    // ---------------------- Settings state ----------------------
+    const settings = {
+      autoSpeak: false,
+      rate: 1.0,
+      pitch: 1.0,
+      theme: 'dark', // 'dark' or 'light'
+      sound: false,
+      autoSend: false,
+    };
+
+    // Load settings from localStorage
+    function loadSettings() {
+      try {
+        const saved = localStorage.getItem('chatProSettings');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          Object.assign(settings, parsed);
         }
-      );
-
-
-
-    const data =
-      await response.json();
-
-
-
-    if (thinkingMessage) {
-
-      thinkingMessage.remove();
-
+      } catch (_) {}
+      applySettingsUI();
+      applyTheme();
     }
 
-
-
-    if (!response.ok) {
-
-      throw new Error(
-        data.error ||
-        "Something went wrong"
-      );
-
+    function saveSettings() {
+      try {
+        localStorage.setItem('chatProSettings', JSON.stringify(settings));
+      } catch (_) {}
     }
 
+    // Apply settings to UI elements
+    function applySettingsUI() {
+      // Toggles
+      document.getElementById('autoSpeakToggle').classList.toggle('active', settings.autoSpeak);
+      document.getElementById('themeToggle').classList.toggle('active', settings.theme === 'light');
+      document.getElementById('soundToggle').classList.toggle('active', settings.sound);
+      document.getElementById('autoSendToggle').classList.toggle('active', settings.autoSend);
 
+      // Sliders
+      document.getElementById('speechRate').value = settings.rate;
+      document.getElementById('speechPitch').value = settings.pitch;
+      updateRateDisplay();
+      updatePitchDisplay();
 
-    addMessage(
-      data.reply ||
-      "Sorry, I could not generate a reply.",
-      "assistant"
-    );
-
-
-  } catch (error) {
-
-
-    if (thinkingMessage) {
-
-      thinkingMessage.remove();
-
+      // Global speaker button highlight
+      globalSpeakerBtn.classList.toggle('active', settings.autoSpeak);
+      autoSpeakEnabled = settings.autoSpeak;
+      soundEnabled = settings.sound;
+      autoSendEnabled = settings.autoSend;
     }
 
+    function applyTheme() {
+      document.body.classList.toggle('light', settings.theme === 'light');
+    }
 
+    // Toggle functions for settings
+    window.toggleSetting = function(key) {
+      if (key === 'autoSpeak') {
+        settings.autoSpeak = !settings.autoSpeak;
+        autoSpeakEnabled = settings.autoSpeak;
+        globalSpeakerBtn.classList.toggle('active', settings.autoSpeak);
+        document.getElementById('autoSpeakToggle').classList.toggle('active', settings.autoSpeak);
+        // If turning off, cancel any ongoing speech
+        if (!settings.autoSpeak && speechSynth.speaking) {
+          speechSynth.cancel();
+        }
+      } else if (key === 'sound') {
+        settings.sound = !settings.sound;
+        soundEnabled = settings.sound;
+        document.getElementById('soundToggle').classList.toggle('active', settings.sound);
+      } else if (key === 'autoSend') {
+        settings.autoSend = !settings.autoSend;
+        autoSendEnabled = settings.autoSend;
+        document.getElementById('autoSendToggle').classList.toggle('active', settings.autoSend);
+      }
+      saveSettings();
+    };
 
-    addMessage(
-      "⚠️ Error: " +
-      (
-        error.message ||
-        "Something went wrong"
-      ),
-      "assistant"
-    );
+    window.toggleTheme = function() {
+      settings.theme = settings.theme === 'dark' ? 'light' : 'dark';
+      document.getElementById('themeToggle').classList.toggle('active', settings.theme === 'light');
+      applyTheme();
+      saveSettings();
+    };
 
+    window.toggleAutoSpeak = function() {
+      toggleSetting('autoSpeak');
+    };
 
-  }
+    window.updateRateDisplay = function() {
+      const val = document.getElementById('speechRate').value;
+      settings.rate = parseFloat(val);
+      document.getElementById('rateDisplay').textContent = val + '×';
+      saveSettings();
+    };
 
+    window.updatePitchDisplay = function() {
+      const val = document.getElementById('speechPitch').value;
+      settings.pitch = parseFloat(val);
+      document.getElementById('pitchDisplay').textContent = val;
+      saveSettings();
+    };
 
+    // Settings modal
+    window.openSettings = function() {
+      document.getElementById('settingsOverlay').classList.add('open');
+    };
+    window.closeSettings = function() {
+      document.getElementById('settingsOverlay').classList.remove('open');
+    };
 
-  input.disabled =
-    false;
+    // ---------------------- Message functions ----------------------
+    function addMessage(text, type) {
+      const msg = document.createElement('div');
+      msg.className = `message ${type}`;
+      msg.textContent = text;
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
 
-
-  button.disabled =
-    false;
-
-
-  attachButton.disabled =
-    false;
-
-
-  button.innerText =
-    "Send";
-
-
-  input.focus();
-
-
-}
-
-
-
-document
-  .getElementById(
-    "messageInput"
-  )
-  .addEventListener(
-    "keydown",
-    function(event) {
-
-      if (
-        event.key === "Enter"
-      ) {
-
-        event.preventDefault();
-
-        sendMessage();
-
+      // If assistant and auto-speak enabled, speak it
+      if (type === 'assistant' && autoSpeakEnabled && text) {
+        speakText(text);
       }
 
+      // Play notification sound if enabled
+      if (type === 'assistant' && soundEnabled) {
+        playNotificationSound();
+      }
+
+      return msg;
     }
-  );
 
+    // Add message with a "speak" button inside (for manual per‑message TTS)
+    function addAssistantMessageWithSpeak(text) {
+      const msg = document.createElement('div');
+      msg.className = 'message assistant';
+      // Create a span for text and a button
+      const textSpan = document.createElement('span');
+      textSpan.textContent = text;
+      const speakBtn = document.createElement('button');
+      speakBtn.className = 'speak-msg-btn';
+      speakBtn.textContent = '🔊';
+      speakBtn.title = 'Speak this message';
+      speakBtn.onclick = function(e) {
+        e.stopPropagation();
+        speakText(text);
+      };
+      msg.appendChild(textSpan);
+      msg.appendChild(speakBtn);
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
 
+      // Auto-speak if enabled
+      if (autoSpeakEnabled) {
+        speakText(text);
+      }
+      if (soundEnabled) {
+        playNotificationSound();
+      }
+      return msg;
+    }
+
+    // Speech synthesis
+    function speakText(text) {
+      if (!window.speechSynthesis) return;
+      // Cancel any ongoing speech
+      if (speechSynth.speaking) {
+        speechSynth.cancel();
+      }
+      utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = settings.rate;
+      utterance.pitch = settings.pitch;
+      utterance.lang = 'en-US';
+      speechSynth.speak(utterance);
+    }
+
+    // Simple notification sound (using Web Audio)
+    function playNotificationSound() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.frequency.value = 880;
+        oscillator.type = 'sine';
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.2);
+      } catch (_) { /* silent fallback */ }
+    }
+
+    // ---------------------- File handling ----------------------
+    window.handleFileSelect = function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (file.size > 10 * 1024 * 1024) {
+        alert('File too large. Please choose under 10 MB.');
+        event.target.value = '';
+        return;
+      }
+
+      selectedFile = file;
+      fileName.textContent = `📎 ${file.name}`;
+      filePreview.style.display = 'flex';
+
+      // Auto-send if enabled
+      if (autoSendEnabled && input.value.trim() !== '') {
+        sendMessage();
+      } else if (autoSendEnabled) {
+        // If input empty, just focus
+        input.focus();
+      }
+    };
+
+    window.removeFile = function() {
+      selectedFile = null;
+      fileInput.value = '';
+      filePreview.style.display = 'none';
+    };
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('Failed to read file'));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // ---------------------- Send message (with abort support) ----------------------
+    window.sendMessage = async function() {
+      const message = input.value.trim();
+      if (!message && !selectedFile) return;
+      if (isSending) {
+        // If already sending, abort previous request (quick reply)
+        if (currentAbortController) {
+          currentAbortController.abort();
+          currentAbortController = null;
+        }
+        // Then proceed to send new one
+      }
+
+      // Build user display text
+      let userDisplay = message;
+      if (selectedFile) {
+        userDisplay += (userDisplay ? '\n\n' : '') + `📎 Attached: ${selectedFile.name}`;
+      }
+      addMessage(userDisplay, 'user');
+
+      const fileToSend = selectedFile;
+      const msgToSend = message;
+
+      // Clear input and remove file preview
+      input.value = '';
+      removeFile();
+
+      // Disable controls
+      setControlsDisabled(true);
+      sendBtn.textContent = '...';
+
+      isSending = true;
+
+      // Create AbortController for this request
+      const controller = new AbortController();
+      currentAbortController = controller;
+      const signal = controller.signal;
+
+      // Show thinking message
+      const thinking = document.createElement('div');
+      thinking.className = 'message assistant';
+      thinking.textContent = 'Chat Pro is thinking... 🤖';
+      chat.appendChild(thinking);
+      chat.scrollTop = chat.scrollHeight;
+
+      try {
+        let fileData = null;
+        if (fileToSend) {
+          const base64 = await fileToBase64(fileToSend);
+          fileData = { name: fileToSend.name, type: fileToSend.type, data: base64 };
+        }
+
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: msgToSend, file: fileData }),
+          signal: signal,
+        });
+
+        // Remove thinking message
+        if (thinking.parentNode) thinking.remove();
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || `Server error (${response.status})`);
+        }
+
+        const data = await response.json();
+        const reply = data.reply || 'Sorry, I could not generate a reply.';
+
+        // Add assistant message with speak button
+        addAssistantMessageWithSpeak(reply);
+
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          // Request was cancelled, we can ignore
+          if (thinking.parentNode) thinking.remove();
+          // Optionally add a note? Usually we don't because new request is coming
+          // But we'll just re-enable controls
+        } else {
+          if (thinking.parentNode) thinking.remove();
+          addMessage(`⚠️ Error: ${error.message || 'Something went wrong'}`, 'assistant');
+        }
+      } finally {
+        isSending = false;
+        currentAbortController = null;
+        setControlsDisabled(false);
+        sendBtn.textContent = 'Send';
+        input.focus();
+      }
+    };
+
+    function setControlsDisabled(disabled) {
+      input.disabled = disabled;
+      sendBtn.disabled = disabled;
+      document.querySelector('.action-btn').disabled = disabled;
+    }
+
+    // ---------------------- Enter key ----------------------
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    // ---------------------- Load settings on startup ----------------------
+    loadSettings();
+
+    // Also re-apply rate/pitch if changed in settings sliders
+    document.getElementById('speechRate').addEventListener('change', function() {
+      settings.rate = parseFloat(this.value);
+      saveSettings();
+    });
+    document.getElementById('speechPitch').addEventListener('change', function() {
+      settings.pitch = parseFloat(this.value);
+      saveSettings();
+    });
+
+  })();
 </script>
 
-
 </body>
-
-    </html>
+  </html>
