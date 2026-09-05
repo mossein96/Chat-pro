@@ -32,13 +32,11 @@
     href="/icon-512.png"
   >
 
-  <!-- Mobile App Icon -->
   <link
     rel="apple-touch-icon"
     href="/icon-192.png"
   >
 
-  <!-- Browser / App Theme -->
   <meta
     name="theme-color"
     content="#121212"
@@ -80,37 +78,6 @@
       text-align: center;
       color: #cccccc;
       margin-bottom: 20px;
-    }
-
-    .premium-card {
-      background: #1f1f1f;
-      border: 1px solid #4caf50;
-      border-radius: 18px;
-      padding: 18px;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-
-    .premium-card h2 {
-      margin: 0 0 10px;
-      color: #4caf50;
-      font-size: 22px;
-    }
-
-    .premium-card p {
-      color: #cccccc;
-      margin: 8px 0 15px;
-    }
-
-    .upgrade-button {
-      width: 100%;
-      padding: 15px;
-      font-size: 17px;
-      background: #4caf50;
-      color: white;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
     }
 
     #chat {
@@ -171,13 +138,6 @@
       cursor: not-allowed;
     }
 
-    .message-count {
-      text-align: center;
-      color: #aaaaaa;
-      margin: 15px 0;
-      font-size: 14px;
-    }
-
     footer {
       text-align: center;
       color: #888888;
@@ -226,27 +186,8 @@
   </h1>
 
   <p class="subtitle">
-    Chat with your personal AI assistant.
+    Chat with your AI assistant.
   </p>
-
-  <div class="premium-card">
-
-    <h2>
-      ⭐ Chat Pro Premium
-    </h2>
-
-    <p>
-      Get more AI messages and future premium features.
-    </p>
-
-    <button
-      class="upgrade-button"
-      onclick="upgradeToPremium()"
-    >
-      ⭐ Upgrade to Premium
-    </button>
-
-  </div>
 
 
   <div id="chat">
@@ -255,14 +196,6 @@
       Hello! 👋 Welcome to Chat Pro. How can I help you today?
     </div>
 
-  </div>
-
-
-  <div
-    class="message-count"
-    id="messageCount"
-  >
-    Free messages remaining: 10
   </div>
 
 
@@ -294,56 +227,6 @@
 
 
 <script>
-
-const FREE_MESSAGE_LIMIT = 100;
-
-
-function getMessageCount() {
-
-  return parseInt(
-    localStorage.getItem(
-      "chatProMessageCount"
-    ) || "0",
-    10
-  );
-
-}
-
-
-function increaseMessageCount() {
-
-  const count =
-    getMessageCount() + 1;
-
-  localStorage.setItem(
-    "chatProMessageCount",
-    count
-  );
-
-  updateMessageCount();
-
-}
-
-
-function updateMessageCount() {
-
-  const used =
-    getMessageCount();
-
-  const remaining =
-    Math.max(
-      0,
-      FREE_MESSAGE_LIMIT - used
-    );
-
-  document.getElementById(
-    "messageCount"
-  ).textContent =
-    "Free messages remaining: " +
-    remaining;
-
-}
-
 
 function addMessage(text, type) {
 
@@ -388,25 +271,6 @@ async function sendMessage() {
 
   if (!message) {
     return;
-  }
-
-
-  const used =
-    getMessageCount();
-
-
-  if (
-    used >=
-    FREE_MESSAGE_LIMIT
-  ) {
-
-    addMessage(
-      "⭐ You have used all your free messages. Upgrade to Chat Pro Premium for more messages.",
-      "assistant"
-    );
-
-    return;
-
   }
 
 
@@ -459,7 +323,9 @@ async function sendMessage() {
       await response.json();
 
 
-    thinkingMessage.remove();
+    if (thinkingMessage) {
+      thinkingMessage.remove();
+    }
 
 
     if (!response.ok) {
@@ -479,12 +345,11 @@ async function sendMessage() {
     );
 
 
-    increaseMessageCount();
-
-
   } catch (error) {
 
-    thinkingMessage.remove();
+    if (thinkingMessage) {
+      thinkingMessage.remove();
+    }
 
 
     addMessage(
@@ -510,15 +375,6 @@ async function sendMessage() {
 }
 
 
-function upgradeToPremium() {
-
-  alert(
-    "⭐ Premium payment is coming soon."
-  );
-
-}
-
-
 document
   .getElementById(
     "messageInput"
@@ -539,9 +395,6 @@ document
 
     }
   );
-
-
-updateMessageCount();
 
 </script>
 
